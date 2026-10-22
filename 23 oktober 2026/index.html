@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Akila ♡</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-purple: #4a1c6a;
+            --dark-purple: #1a0b2e;
+            --soft-purple: #9d7bce;
+            --accent-pink: #d88ebc;
+            --void-color: #080312;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, var(--primary-purple) 0%, var(--dark-purple) 100%);
+            color: white;
+            height: 100vh;
+            width: 100vw;
+            touch-action: manipulation;
+        }
+
+        .font-serif-elegant { font-family: 'Playfair Display', serif; }
+
+        /* Ambient background */
+        .ambient-bg {
+            position: absolute; inset: 0; z-index: 0;
+            pointer-events: none; overflow: hidden;
+            transition: opacity 1s ease-in-out;
+        }
+        .glowing-orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: .4;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .glass {
+            background: rgba(255,255,255,.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.1);
+            box-shadow: 0 4px 30px rgba(0,0,0,.1);
+        }
+
+        @keyframes float { 0% { transform: translate(0,0); } 100% { transform: translate(20px,-30px); } }
+        @keyframes pulse-soft { 0%,100% { opacity: .7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.02); } }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+        @keyframes sparkle-float {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            50% { opacity: 1; transform: translateY(-50px) scale(1); }
+            100% { transform: translateY(-100px) scale(0); opacity: 0; }
+        }
+
+        .particle { position: absolute; background: white; border-radius: 50%; pointer-events: none; opacity: 0; }
+
+        /* Scenes */
+        .scene {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+            z-index: 10;
+        }
+        .scene.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+        .scene.exit { opacity: 0; transform: scale(1.1); }
+
+        /* Gift box */
+        .gift-container { position: relative; width: 150px; height: 150px; margin: 20px auto; transition: all .5s ease; }
+        .gift-box-body {
+            position: absolute; bottom: 0; width: 100%; height: 110px;
+            background: linear-gradient(135deg,#7c4dff,#512da8); border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,.3), 0 10px 20px rgba(0,0,0,.5);
+            display: flex; justify-content: center; z-index: 1;
+        }
+        .gift-box-body::after { content: ''; position: absolute; width: 25px; height: 100%; background: rgba(255,255,255,.8); box-shadow: 0 0 10px rgba(255,255,255,.5); }
+        .gift-lid {
+            position: absolute; top: 20px; left: -5px; width: 160px; height: 40px;
+            background: linear-gradient(135deg,#8c5eff,#613db8); border-radius: 6px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,.2), 0 5px 15px rgba(0,0,0,.4);
+            z-index: 2; transition: transform 1s cubic-bezier(.25,1,.5,1), opacity 1s ease;
+            transform-origin: bottom right; display: flex; justify-content: center;
+        }
+        .gift-lid::after { content: ''; position: absolute; width: 25px; height: 100%; background: rgba(255,255,255,.9); }
+        .bow { position: absolute; top: -25px; width: 100%; display: flex; justify-content: center; z-index: 3; transition: transform .5s ease, opacity .5s ease; }
+        .bow-left, .bow-right { width: 40px; height: 30px; border: 8px solid rgba(255,255,255,.9); border-bottom: none; border-radius: 20px 20px 0 0; position: relative; }
+        .bow-left { border-right: none; transform: rotate(-30deg); left: 5px; }
+        .bow-right { border-left: none; transform: rotate(30deg); right: 5px; }
+
+        .gift-container.shake { animation: shake .4s ease-in-out infinite; }
+        .gift-container.glow { filter: drop-shadow(0 0 30px var(--soft-purple)); }
+        .gift-container.opening .gift-lid { transform: translateY(-40px) rotate(10deg); }
+        .gift-container.opened .gift-lid { transform: translate(50px,-150px) rotate(45deg); opacity: 0; }
+        .gift-container.opened .bow { opacity: 0; transform: translateY(-50px); }
+
+        .magic-light {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0);
+            width: 10px; height: 10px; background: white; border-radius: 50%;
+            box-shadow: 0 0 50px 50px white, 0 0 100px 100px var(--soft-purple);
+            opacity: 0; z-index: 0;
+            transition: transform 2s ease-in, opacity 2s ease; pointer-events: none;
+        }
+        .magic-light.explode { transform: translate(-50%,-50%) scale(150); opacity: 1; }
+
+        /* Keypad */
+        .keypad-btn {
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+            color: white; border-radius: 50%; width: 60px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; font-weight: 300; transition: all .2s;
+            cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .keypad-btn:active { background: rgba(255,255,255,.2); transform: scale(.95); }
+        .keypad-btn:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent-pink); outline-offset: 3px; }
+        .code-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); transition: all .3s; }
+        .code-dot.filled { background: white; border-color: white; box-shadow: 0 0 10px white; }
+        .input-error { animation: shake .5s; }
+        .input-error .code-dot { border-color: #ff4b4b; background: transparent; box-shadow: none; }
+        .input-success .code-dot.filled { background: var(--soft-purple); border-color: var(--soft-purple); box-shadow: 0 0 15px var(--soft-purple); }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 10%; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0; transition: all .3s ease; z-index: 50; pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ===== Big reveal ===== */
+        #reveal-container { background: var(--void-color); }
+        .reveal-ambient-star { position: absolute; background: white; border-radius: 50%; opacity: .3; animation: pulse-soft 3s infinite alternate; }
+
+        #reveal-heart-wrapper {
+            left: 50%; top: 35%;
+            transform: translate(-50%,-50%) scale(0);
+            transform-origin: center center;
+        }
+        #reveal-text-container {
+            position: absolute; top: 55%; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            pointer-events: none;
+        }
+        .reveal-text-line {
+            position: absolute; text-align: center; width: 100%; padding: 0 24px;
+            opacity: 0; transform: translateY(10px);
+            transition: all 1.2s ease-in-out;
+            font-family: 'Playfair Display', serif; font-weight: 300;
+        }
+
+        @keyframes heart-beat-glow-soft {
+            0%,100% { transform: translate(-50%,-50%) scale(1); filter: drop-shadow(0 0 10px rgba(216,142,188,.4)) drop-shadow(0 0 20px rgba(157,123,206,.3)); }
+            50% { transform: translate(-50%,-50%) scale(1.05); filter: drop-shadow(0 0 15px rgba(255,255,255,.6)) drop-shadow(0 0 30px rgba(216,142,188,.5)); }
+        }
+        .heart-pulse-anim { animation: heart-beat-glow-soft 3s infinite cubic-bezier(.4,0,.2,1); }
+        .heart-center-anim {
+            left: 50% !important; top: 50% !important;
+            transform: translate(-50%,-50%) scale(1.2) !important;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,.8)) !important;
+            transition: all 1.5s cubic-bezier(.4,0,.2,1) !important;
+        }
+        .heart-expand-anim {
+            left: 50% !important; top: 50% !important;
+            transform: translate(-50%,-50%) scale(3) !important;
+            filter: drop-shadow(0 0 60px white) !important;
+            opacity: 0 !important;
+            transition: all .8s cubic-bezier(.1,.8,.2,1) !important;
+        }
+
+        .explosion-particle {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0); opacity: 1;
+            transition: transform 1.2s cubic-bezier(.1,.8,.2,1), opacity 1.2s ease-out;
+            pointer-events: none; filter: drop-shadow(0 0 6px rgba(255,255,255,.8));
+            will-change: transform, opacity;
+        }
+        .explosion-particle.active { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 0; }
+
+        .cinematic-flash {
+            background: radial-gradient(circle at center, #fff 0%, #e9d5ff 30%, rgba(157,123,206,.4) 60%, transparent 100%);
+            mix-blend-mode: screen;
+        }
+
+        /* ===== Main website ===== */
+        #main-website { background: radial-gradient(ellipse at top, #4a1c6a 0%, #1a0b2e 48%, #10071e 100%); }
+        #main-website::-webkit-scrollbar { width: 6px; }
+        #main-website::-webkit-scrollbar-track { background: transparent; }
+        #main-website::-webkit-scrollbar-thumb { background: rgba(157,123,206,.5); border-radius: 10px; }
+
+        .birthday-nav { background: rgba(24,9,42,.65); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,.06); }
+        .section-glow { position: absolute; width: 16rem; height: 16rem; transform: translateX(-50%); border-radius: 9999px; background: rgba(157,123,206,.16); filter: blur(90px); pointer-events: none; }
+        .memory-card { overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 1.4rem; background: rgba(255,255,255,.055); box-shadow: 0 20px 55px rgba(0,0,0,.16); transition: transform .35s ease, border-color .35s ease; }
+        .memory-card:hover { transform: translateY(-5px) rotate(0deg); border-color: rgba(221,190,255,.35); }
+        .memory-art { position: relative; display: flex; min-height: 210px; flex-direction: column; align-items: center; justify-content: center; gap: .65rem; overflow: hidden; color: rgba(255,255,255,.9); }
+        .memory-art::before, .memory-art::after { position: absolute; content: ''; border: 1px solid rgba(255,255,255,.2); border-radius: 9999px; }
+        .memory-art::before { width: 170px; height: 170px; }
+        .memory-art::after { width: 230px; height: 230px; }
+        .memory-art span { z-index: 1; font-family: 'Playfair Display', serif; font-size: 3.5rem; text-shadow: 0 0 28px rgba(255,255,255,.4); }
+        .memory-art small { z-index: 1; font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.75); }
+        .memory-art.has-photo { aspect-ratio: 1 / 1; min-height: 0; justify-content: flex-end; }
+        .memory-art.has-photo::before, .memory-art.has-photo::after { display: none; }
+        .memory-art.has-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .memory-art.has-photo .photo-caption { position: relative; z-index: 1; width: 100%; padding: 2.2rem 1rem .9rem; text-align: center; background: linear-gradient(to top, rgba(20,8,36,.78), transparent); font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.85); }
+        .art-one { background: radial-gradient(circle at 50% 45%, #9c6fba, #4c276b 60%, #26113c); }
+        .art-two { background: radial-gradient(circle at 50% 45%, #b77cae, #63366f 58%, #2b123f); }
+        .art-three { background: radial-gradient(circle at 50% 45%, #7f79bf, #49316f 58%, #201038); }
+        .letter-paper { padding: 2rem 1.5rem; border-radius: 1.2rem; background: linear-gradient(145deg,#fbf3ff,#eadcf8); box-shadow: 0 20px 70px rgba(0,0,0,.25); animation: letter-appear .6s ease both; }
+        @keyframes letter-appear { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (min-width: 640px) { .letter-paper { padding: 2.5rem 3rem; } }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+        /* ===== Make a wish cake ===== */
+        .cake { position: relative; width: 190px; height: 160px; margin: 2.2rem auto 1.6rem; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .cake-plate { position: absolute; bottom: 0; left: -14px; right: -14px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.22); box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+        .cake-bottom { position: absolute; bottom: 6px; left: 0; right: 0; height: 54px; border-radius: 14px; background: linear-gradient(#b77cae, #7d4a97); box-shadow: inset 0 -8px 14px rgba(0,0,0,.18); }
+        .cake-top { position: absolute; bottom: 58px; left: 22px; right: 22px; height: 44px; border-radius: 14px; background: linear-gradient(#f3d1ea, #d88ebc); box-shadow: inset 0 -6px 12px rgba(0,0,0,.1); }
+        .cake-top::before { content: ''; position: absolute; top: -3px; left: 0; right: 0; height: 22px; border-radius: 14px 14px 0 0; background: radial-gradient(circle 8px at 10px 12px, #fff6fc 98%, transparent) repeat-x; background-size: 26px 22px; }
+        .cake-top::after { content: ''; position: absolute; top: -3px; left: 0; right: 0; height: 12px; border-radius: 14px 14px 0 0; background: #fff6fc; }
+        .candle { position: absolute; bottom: 100px; left: 50%; width: 9px; height: 40px; transform: translateX(-50%); border-radius: 3px; background: repeating-linear-gradient(135deg, #fff 0 6px, #f3a6d0 6px 12px); }
+        .flame { position: absolute; top: -24px; left: 50%; width: 13px; height: 22px; transform: translateX(-50%); transform-origin: 50% 100%; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: radial-gradient(ellipse at 50% 70%, #fff 10%, #ffd27a 48%, #ff9a3c 100%); box-shadow: 0 0 14px 4px rgba(255,190,100,.65), 0 0 40px 12px rgba(255,150,80,.3); animation: flame-flicker 1.4s infinite ease-in-out alternate; transition: opacity .5s ease, transform .5s ease; }
+        .flame.out { opacity: 0; transform: translateX(-50%) scale(.2); animation: none; }
+        @keyframes flame-flicker {
+            0% { transform: translateX(-50%) scale(1, 1) rotate(-2deg); }
+            50% { transform: translateX(-50%) scale(.94, 1.08) rotate(2deg); }
+            100% { transform: translateX(-50%) scale(1.04, .96) rotate(-1deg); }
+        }
+        .wish-particle { position: absolute; left: 50%; top: 38%; z-index: 5; pointer-events: none; font-size: var(--size, 16px); color: var(--color, #fff); text-shadow: 0 0 10px currentColor; animation: wish-pop var(--dur, 2s) cubic-bezier(.15,.8,.3,1) forwards; }
+        @keyframes wish-pop {
+            0% { transform: translate(-50%, -50%) scale(.2) rotate(0deg); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1) rotate(var(--rot)); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Letakkan file lagunya di folder yang sama dengan nama: perahu-kertas.mp3 -->
+    <audio id="bgMusic" src="perahu-kertas.mp3" loop preload="auto"></audio>
+
+    <div class="ambient-bg" id="ambientBg">
+        <div class="glowing-orb" style="top:-10%; left:10%; width:300px; height:300px; background:var(--soft-purple);"></div>
+        <div class="glowing-orb" style="bottom:10%; right:10%; width:250px; height:250px; background:var(--accent-pink); animation-delay:-5s;"></div>
+    </div>
+
+    <div id="toast" class="glass px-6 py-3 rounded-full text-sm font-medium text-white shadow-lg border border-purple-500/30">
+        Sedikit lagi, cayangkuuuu ♡
+    </div>
+
+    <!-- ================= SCENE 1: COUNTDOWN ================= -->
+    <div id="scene1" class="scene active px-4 text-center">
+        <p class="text-xs tracking-[0.3em] text-purple-300 mb-4 opacity-80 uppercase">✦ Menghitung Hari ✦</p>
+
+        <h1 class="font-serif-elegant text-5xl md:text-6xl text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] mb-2">Her Special Day</h1>
+        <h2 class="font-serif-elegant text-4xl md:text-5xl text-white italic opacity-90 mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">is Coming</h2>
+
+        <p class="text-sm md:text-base text-gray-200 mb-12 font-light max-w-xs mx-auto">Sesuatu yang indah sedang menunggumu cantik kuuu ♡</p>
+
+        <div class="flex justify-center gap-3 md:gap-4 mb-12">
+            <div class="glass flex flex-col items-center justify-center w-16 h-20 md:w-20 md:h-24 rounded-xl border-purple-500/30 shadow-[0_0_15px_rgba(157,123,206,0.2)]">
+                <span id="cd-days" class="text-2xl md:text-3xl font-semibold">00</span>
+                <span class="text-[10px] md:text-xs text-purple-200 uppercase tracking-widest mt-1">Hari</span>
+            </div>
+            <div class="text-2xl mt-4 text-purple-300">:</div>
+            <div class="glass flex flex-col items-center justify-center w-16 h-20 md:w-20 md:h-24 rounded-xl border-purple-500/30 shadow-[0_0_15px_rgba(157,123,206,0.2)]">
+                <span id="cd-hours" class="text-2xl md:text-3xl font-semibold">00</span>
+                <span class="text-[10px] md:text-xs text-purple-200 uppercase tracking-widest mt-1">Jam</span>
+            </div>
+            <div class="text-2xl mt-4 text-purple-300">:</div>
+            <div class="glass flex flex-col items-center justify-center w-16 h-20 md:w-20 md:h-24 rounded-xl border-purple-500/30 shadow-[0_0_15px_rgba(157,123,206,0.2)]">
+                <span id="cd-minutes" class="text-2xl md:text-3xl font-semibold">00</span>
+                <span class="text-[10px] md:text-xs text-purple-200 uppercase tracking-widest mt-1">Menit</span>
+            </div>
+            <div class="text-2xl mt-4 text-purple-300">:</div>
+            <div class="glass flex flex-col items-center justify-center w-16 h-20 md:w-20 md:h-24 rounded-xl border-purple-500/30 shadow-[0_0_15px_rgba(157,123,206,0.2)]">
+                <span id="cd-seconds" class="text-2xl md:text-3xl font-semibold inline-block transition-transform">00</span>
+                <span class="text-[10px] md:text-xs text-purple-200 uppercase tracking-widest mt-1">Detik</span>
+            </div>
+        </div>
+
+        <div class="h-20 flex items-center justify-center relative w-full max-w-sm mx-auto">
+            <button id="btn-wait" onclick="showToast('Sedikit lagi, cayangkuuuu ♡')" class="absolute w-full py-4 px-6 rounded-full glass border-white/10 text-gray-400 text-sm md:text-base font-light transition-all duration-300 hover:bg-white/5 active:scale-95" style="animation: pulse-soft 3s infinite;">
+                ⏳ Tunggu sampai waktunya 🎂
+            </button>
+            <button id="btn-open" onclick="goToScene2()" class="absolute w-full py-4 px-6 rounded-full bg-white text-purple-900 font-semibold text-base md:text-lg shadow-[0_0_30px_rgba(255,255,255,0.5)] opacity-0 pointer-events-none transition-all duration-1000 scale-90 flex flex-col items-center justify-center">
+                <span>Open Web ♡</span>
+                <span class="text-[10px] font-normal mt-0.5 text-purple-700 opacity-80">Sekarang waktunya... ♡</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= SCENE 2: GIFT BOX & CODE ================= -->
+    <div id="scene2" class="scene px-4 text-center">
+        <p class="text-xs tracking-[0.3em] text-purple-300 mb-2 opacity-80 uppercase">✦ Ada Sesuatu Untukmu ✦</p>
+        <h2 class="font-serif-elegant text-2xl text-white mb-8">Your special gift is waiting...</h2>
+
+        <div id="gift-wrapper" class="gift-container" onclick="handleGiftClick()">
+            <div id="magic-light" class="magic-light"></div>
+            <div class="bow">
+                <div class="bow-left"></div>
+                <div class="bow-right"></div>
+            </div>
+            <div class="gift-lid"></div>
+            <div class="gift-box-body"></div>
+        </div>
+
+        <div id="gift-instructions" class="h-16 flex items-center justify-center mt-4"></div>
+
+        <div id="code-area" class="mt-8 w-full max-w-xs mx-auto transition-opacity duration-500">
+            <p class="text-sm font-light text-gray-300 mb-4">Masukkan kode rahasia kita ♡</p>
+
+            <div id="code-dots" class="flex justify-center gap-3 mb-8">
+                <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+                <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 md:gap-4 place-items-center max-w-[240px] mx-auto">
+                <button class="keypad-btn" onclick="enterDigit(1)">1</button>
+                <button class="keypad-btn" onclick="enterDigit(2)">2</button>
+                <button class="keypad-btn" onclick="enterDigit(3)">3</button>
+                <button class="keypad-btn" onclick="enterDigit(4)">4</button>
+                <button class="keypad-btn" onclick="enterDigit(5)">5</button>
+                <button class="keypad-btn" onclick="enterDigit(6)">6</button>
+                <button class="keypad-btn" onclick="enterDigit(7)">7</button>
+                <button class="keypad-btn" onclick="enterDigit(8)">8</button>
+                <button class="keypad-btn" onclick="enterDigit(9)">9</button>
+                <button class="keypad-btn text-sm opacity-70" onclick="clearCode()" aria-label="Hapus semua">C</button>
+                <button class="keypad-btn" onclick="enterDigit(0)">0</button>
+                <button class="keypad-btn opacity-70" onclick="deleteDigit()" aria-label="Hapus satu angka">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= BIG REVEAL ================= -->
+    <div id="reveal-container" class="fixed inset-0 z-[100] pointer-events-none opacity-0 flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div id="reveal-ambient" class="absolute inset-0 opacity-0 transition-opacity duration-[2000ms]"></div>
+
+        <div id="reveal-heart-wrapper" class="absolute opacity-0 transition-all duration-[2000ms] ease-out flex items-center justify-center z-20">
+            <svg class="w-16 h-16 fill-white" viewBox="0 0 32 29.6">
+                <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+            </svg>
+        </div>
+
+        <div id="reveal-text-container" class="z-30">
+            <div id="reveal-text-1" class="reveal-text-line text-lg md:text-xl text-white drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]">For the girl who means so much to me...</div>
+            <div id="reveal-text-2" class="reveal-text-line text-xl md:text-2xl text-purple-50 tracking-wide drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]">This little world is yours. ♡</div>
+        </div>
+
+        <div id="reveal-flash" class="absolute inset-0 opacity-0 transition-all duration-1000 ease-in cinematic-flash scale-50 z-40 pointer-events-none"></div>
+        <div id="reveal-portal" class="absolute inset-0 opacity-0 transform scale-0 transition-all duration-[2000ms] ease-in-out bg-white mix-blend-overlay z-50 pointer-events-none"></div>
+    </div>
+
+    <!-- ================= MAIN WEBSITE ================= -->
+    <div id="main-website" class="fixed inset-0 z-[150] opacity-0 pointer-events-none overflow-x-hidden overflow-y-auto transform scale-110 blur-xl transition-all duration-[2000ms] ease-out hidden">
+
+        <!-- Hero -->
+        <div id="birthday-home" class="relative min-h-screen w-full flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+            <div id="main-stars" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-[2000ms]"></div>
+
+            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full filter blur-[120px] opacity-20 animate-pulse" style="background: var(--soft-purple);"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-80 h-80 rounded-full filter blur-[100px] opacity-20" style="background: var(--accent-pink); animation: pulse-soft 8s infinite alternate;"></div>
+
+            <div id="main-hero-content" class="relative z-10 opacity-0 transform translate-y-8 transition-all duration-[1500ms] delay-700 ease-out flex flex-col items-center">
+                <h1 class="font-serif-elegant text-4xl md:text-5xl lg:text-6xl text-white mb-6 drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">Happy Birthday, Akila ♡</h1>
+                <div class="h-px w-24 bg-gradient-to-r from-transparent via-purple-300 to-transparent mb-6 opacity-70"></div>
+                <h2 class="font-sans text-lg md:text-xl text-purple-100 font-light mb-3 tracking-wide">Welcome to your little world.</h2>
+                <p class="font-sans text-sm md:text-base text-purple-300/80 italic tracking-widest mt-2">Made especially for you, cayangkuuuu.</p>
+
+                <div class="mt-16 animate-bounce opacity-60">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="birthday-nav sticky top-0 z-40 mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4">
+            <a href="#birthday-home" class="font-serif-elegant text-lg text-purple-100">for akila ♡</a>
+            <div class="flex items-center gap-4 text-xs sm:text-sm text-purple-100/80">
+                <a href="#our-memories" class="hover:text-white transition">Memories</a>
+                <a href="#my-letter" class="hover:text-white transition">A Letter</a>
+            </div>
+        </nav>
+
+        <!-- Memories -->
+        <section id="our-memories" class="relative mx-auto w-full max-w-5xl px-5 py-20 sm:py-28">
+            <div class="section-glow left-1/2 top-20"></div>
+            <div class="relative z-10 mx-auto mb-10 max-w-2xl text-center">
+                <p class="mb-3 text-xs uppercase tracking-[0.35em] text-purple-300">little pieces of us</p>
+                <h2 class="font-serif-elegant text-3xl sm:text-5xl text-white">Our Little Memories</h2>
+                <p class="mx-auto mt-5 max-w-lg text-sm leading-7 text-purple-100/70">Hal-hal sederhana bisa jadi kenangan paling berharga, apalagi kalau ada kamu di dalamnya. ♡</p>
+            </div>
+            <div class="relative z-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <article class="memory-card rotate-[-1deg]">
+                    <div class="memory-art art-one has-photo"><img src="foto-1.jpg" alt="Akila tersenyum dengan mata terpejam" loading="lazy" style="object-position: 50% 43%;"><div class="photo-caption">your favorite smile</div></div>
+                    <div class="p-5"><p class="font-serif-elegant text-xl text-white">The way you smile</p><p class="mt-2 text-sm leading-6 text-purple-100/65">Senyum kamu punya cara sendiri buat bikin hari biasa terasa istimewa.</p></div>
+                </article>
+                <article class="memory-card sm:translate-y-7 rotate-[1deg]">
+                    <div class="memory-art art-two has-photo"><img src="foto-2.jpg" alt="Dua avatar berjaket putih di dekat api unggun" loading="lazy" style="object-position: 61% 50%;"><div class="photo-caption">little moments</div></div>
+                    <div class="p-5"><p class="font-serif-elegant text-xl text-white">Little things, big feelings</p><p class="mt-2 text-sm leading-6 text-purple-100/65">Obrolan random, candaan receh, dan waktu kecil yang berarti banyak.</p></div>
+                </article>
+                <article class="memory-card rotate-[-.5deg]">
+                    <div class="memory-art art-three has-photo"><img src="foto-3.jpg" alt="Akila berkacamata menatap kamera" loading="lazy" style="object-position: 50% 36%;"><div class="photo-caption">my favorite person</div></div>
+                    <div class="p-5"><p class="font-serif-elegant text-xl text-white">You, always you</p><p class="mt-2 text-sm leading-6 text-purple-100/65">Dari sekian banyak hal indah, mengenal kamu tetap jadi salah satunya.</p></div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Birthday wish -->
+        <section class="relative overflow-hidden px-5 py-20 sm:py-24">
+            <div class="absolute inset-0 bg-gradient-to-b from-purple-950/10 via-fuchsia-900/20 to-purple-950/10"></div>
+            <div class="relative z-10 mx-auto max-w-3xl rounded-[2rem] border border-white/10 bg-white/[0.045] px-6 py-10 text-center shadow-2xl shadow-purple-950/20 backdrop-blur-sm sm:px-12 sm:py-14">
+                <div class="mb-5 text-3xl text-pink-200">✧･ﾟ: *✧･ﾟ:*</div>
+                <p class="text-xs uppercase tracking-[0.35em] text-purple-300">a wish for you</p>
+                <h2 class="mt-4 font-serif-elegant text-3xl leading-tight text-white sm:text-4xl">May this new chapter be gentle to you.</h2>
+                <p class="mx-auto mt-6 max-w-xl text-sm leading-8 text-purple-100/75">Semoga di umur yang baru ini, dede selalu punya alasan buat tersenyum, dikelilingi orang-orang yang tulus, dan diberi keberanian buat mengejar semua hal yang dede impikan. Kalau hari terasa berat, semoga dede tetap ingat kalau dede sudah sejauh ini dan itu sesuatu yang patut dibanggakan.</p>
+                <div class="mt-7 font-serif-elegant text-lg italic text-pink-200">You deserve beautiful things, cayangkuuuu. ♡</div>
+            </div>
+        </section>
+
+        <!-- Letter -->
+        <section id="my-letter" class="relative mx-auto w-full max-w-3xl px-5 py-20 sm:py-28">
+            <div class="mx-auto max-w-xl text-center">
+                <p class="text-xs uppercase tracking-[0.35em] text-purple-300">from my heart to yours</p>
+                <h2 class="mt-4 font-serif-elegant text-3xl text-white sm:text-5xl">A Little Letter for You</h2>
+                <p class="mt-4 text-sm leading-7 text-purple-100/65">Ada sesuatu yang pengin aku bilang, bukan cuma hari ini, tapi kapan pun dede butuh diingatkan.</p>
+                <button id="letter-open-btn" type="button" onclick="toggleBirthdayLetter()" class="mt-8 rounded-full border border-purple-200/30 bg-purple-200/10 px-7 py-3 text-sm text-purple-50 transition hover:bg-purple-200/20 hover:shadow-lg hover:shadow-purple-500/10">Buka surat kecil ini ♡</button>
+                <div id="birthday-letter" class="letter-paper mt-7 hidden text-left">
+                    <p class="font-serif-elegant text-2xl italic text-purple-950">For my cayangkuuuu,</p>
+                    <div class="mt-5 space-y-4 text-sm leading-8 text-purple-950/85">
+                        <p>Selamat ulang tahun, sayangku, Akila Ananda Zaynia. ♡</p>
+                        <p>Hari ini adalah hari tentang dede—tentang seseorang yang kehadirannya punya tempat spesial di hidup aku. Aku berharap dede bisa melihat diri dede dengan penuh kasih, sama seperti orang-orang yang menyayangi dede melihat betapa berharganya dede.</p>
+                        <p>Aku nggak bisa janji kalau setiap hari akan selalu mudah, tapi aku berharap dede selalu punya kekuatan buat melewati hari-hari itu, punya ruang buat istirahat, dan nggak lupa merayakan hal-hal kecil yang sudah dede capai.</p>
+                        <p>Makasih sudah hadir, sudah berbagi cerita, tawa, dan banyak momen yang sekarang jadi bagian dari perjalanan kita. Semoga tahun ini membawa lebih banyak hal baik, kesempatan baru, dan kebahagiaan yang dede pantas dapatkan.</p>
+                        <p>Jangan buru-buru jadi sempurna, ya. Tumbuh pelan-pelan juga nggak apa-apa. Aku harap dede selalu bisa jadi diri sendiri dan tetap menyimpan hal-hal yang bikin dede bahagia.</p>
+                        <p class="font-serif-elegant text-xl italic">Happy birthday, my favorite person. ♡</p>
+                        <p class="pt-2 font-serif-elegant text-lg italic">With love, always.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music & closing -->
+        <section class="px-5 pb-20 pt-8 text-center">
+            <div id="wish-card" class="relative mx-auto max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] px-6 py-10 sm:px-10 sm:py-12">
+                <div class="section-glow left-1/2 top-10" style="background: rgba(216,142,188,.18);"></div>
+                <div class="relative z-10">
+                    <p class="text-xs uppercase tracking-[0.3em] text-purple-300">make a wish</p>
+                    <h2 id="wish-title" class="mt-3 font-serif-elegant text-2xl text-white sm:text-3xl">Tiup lilinnya, Akila ♡</h2>
+
+                    <div class="cake" id="cake" onclick="toggleCandle()" role="button" tabindex="0" aria-label="Kue ulang tahun, ketuk untuk meniup lilin" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCandle();}">
+                        <div class="cake-plate"></div>
+                        <div class="cake-bottom"></div>
+                        <div class="cake-top"></div>
+                        <div class="candle"><div id="flame" class="flame"></div></div>
+                    </div>
+
+                    <p id="wish-text" class="mx-auto max-w-sm text-sm leading-7 text-purple-100/70" aria-live="polite">Pejamkan mata, buat satu permintaan, lalu ketuk tombol di bawah.</p>
+                    <button id="wish-btn" type="button" onclick="toggleCandle()" class="mt-6 inline-flex items-center gap-2 rounded-full bg-purple-100 px-6 py-3 text-sm font-medium text-purple-950 transition hover:bg-white">Tiup lilin ♡</button>
+                </div>
+            </div>
+            <div class="mt-16">
+                <div class="font-serif-elegant text-3xl text-pink-200">♡</div>
+                <p class="mt-3 font-serif-elegant text-2xl text-white">Happy Birthday, Akila</p>
+                <p class="mt-3 text-xs tracking-widest text-purple-200/55">MADE WITH LOVE, JUST FOR YOU</p>
+                <p class="mt-8 text-xs text-purple-200/35">A tiny universe for cayangkuuuu · 23 October ♡</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Tombol musik (muncul setelah masuk halaman utama) -->
+    <button id="music-btn" type="button" onclick="toggleMusic()" aria-label="Putar atau jeda musik" aria-pressed="false"
+        class="hidden fixed bottom-5 right-5 z-[200] h-12 w-12 items-center justify-center rounded-full glass text-xl text-purple-100 transition hover:bg-white/10">♫</button>
+
+    <script>
+        // ================= CONFIG =================
+        // Waktu countdown (waktu lokal perangkat yang membuka halaman).
+        const BIRTHDAY = new Date('2026-10-23T00:00:00');
+        // Kode rahasia 6 digit (9 April 2026).
+        const TARGET_CODE = '942026';
+        // Buka halaman dengan ?test di akhir URL untuk mencoba alurnya
+        // dengan countdown 10 detik, tanpa menunggu tanggal aslinya.
+        const TEST_MODE = new URLSearchParams(location.search).has('test');
+
+        // ================= STATE =================
+        const countdownTarget = TEST_MODE ? Date.now() + 10000 : BIRTHDAY.getTime();
+        let timerInterval;
+        let enteredCode = '';
+        let isGiftUnlocked = false;
+        let isOpeningSequence = false;
+
+        // ================= DOM =================
+        const elDays = document.getElementById('cd-days');
+        const elHours = document.getElementById('cd-hours');
+        const elMinutes = document.getElementById('cd-minutes');
+        const elSeconds = document.getElementById('cd-seconds');
+        const btnWait = document.getElementById('btn-wait');
+        const btnOpen = document.getElementById('btn-open');
+        const scene1 = document.getElementById('scene1');
+        const scene2 = document.getElementById('scene2');
+        const toast = document.getElementById('toast');
+        const codeDots = document.querySelectorAll('.code-dot');
+        const codeDotsContainer = document.getElementById('code-dots');
+        const codeArea = document.getElementById('code-area');
+        const giftWrapper = document.getElementById('gift-wrapper');
+        const giftInstructions = document.getElementById('gift-instructions');
+        const magicLight = document.getElementById('magic-light');
+
+        const pad = (n) => String(n).padStart(2, '0');
+
+        // ================= BACKGROUND PARTICLES =================
+        function createParticles() {
+            const bg = document.getElementById('ambientBg');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.style.width = Math.random() * 3 + 1 + 'px';
+                p.style.height = p.style.width;
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.top = Math.random() * 100 + 'vh';
+                p.style.animation = `sparkle-float ${Math.random() * 4 + 3}s infinite linear ${Math.random() * 5}s`;
+                bg.appendChild(p);
+            }
+        }
+        createParticles();
+
+        // ================= SCENE 1: COUNTDOWN =================
+        function tick() {
+            const diff = Math.max(0, countdownTarget - Date.now());
+            const totalSeconds = Math.floor(diff / 1000);
+
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            elDays.textContent = pad(days);
+            elHours.textContent = pad(hours);
+            elMinutes.textContent = pad(minutes);
+            elSeconds.textContent = pad(seconds);
+
+            elSeconds.style.transform = 'scale(1.2)';
+            setTimeout(() => (elSeconds.style.transform = 'scale(1)'), 150);
+
+            if (diff <= 0) {
+                clearInterval(timerInterval);
+                handleCountdownComplete();
+            }
+        }
+
+        function startCountdown() {
+            tick();
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function handleCountdownComplete() {
+            btnWait.style.opacity = '0';
+            btnWait.style.pointerEvents = 'none';
+            setTimeout(() => {
+                btnOpen.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+                btnOpen.classList.add('opacity-100', 'scale-100');
+            }, 300);
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ================= MUSIC =================
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('music-btn');
+        const MUSIC_VOLUME = 0.7;
+        let fadeTimer;
+
+        function fadeMusicTo(target, ms = 2500) {
+            clearInterval(fadeTimer);
+            const steps = 25;
+            const start = bgMusic.volume;
+            let i = 0;
+            fadeTimer = setInterval(() => {
+                i++;
+                bgMusic.volume = Math.min(1, Math.max(0, start + (target - start) * (i / steps)));
+                if (i >= steps) {
+                    clearInterval(fadeTimer);
+                    if (target === 0) bgMusic.pause();
+                }
+            }, ms / steps);
+        }
+
+        function setMusicUi(isPlaying) {
+            musicBtn.setAttribute('aria-pressed', String(isPlaying));
+            musicBtn.style.opacity = isPlaying ? '1' : '0.5';
+        }
+
+        // Dipanggil saat ketukan pertama agar browser mengizinkan pemutaran otomatis nanti.
+        function unlockMusic() {
+            bgMusic.volume = 0;
+            bgMusic.play().then(() => { bgMusic.pause(); bgMusic.currentTime = 0; }).catch(() => {});
+        }
+
+        function startMusic() {
+            musicBtn.classList.remove('hidden');
+            musicBtn.classList.add('flex');
+            bgMusic.volume = 0;
+            bgMusic.play()
+                .then(() => { fadeMusicTo(MUSIC_VOLUME); setMusicUi(true); })
+                .catch(() => setMusicUi(false)); // kalau diblokir, tombol ♫ bisa diketuk manual
+        }
+
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.volume = 0;
+                bgMusic.play().then(() => { fadeMusicTo(MUSIC_VOLUME, 1000); setMusicUi(true); }).catch(() => {});
+            } else {
+                fadeMusicTo(0, 800);
+                setMusicUi(false);
+            }
+        }
+
+        function goToScene2() {
+            unlockMusic();
+            scene1.classList.remove('active');
+            scene1.classList.add('exit');
+            setTimeout(() => scene2.classList.add('active'), 800);
+        }
+
+        // ================= SCENE 2: CODE INPUT =================
+        function updateDots() {
+            codeDots.forEach((dot, index) => {
+                dot.classList.toggle('filled', index < enteredCode.length);
+            });
+        }
+
+        function enterDigit(num) {
+            if (enteredCode.length < 6 && !isGiftUnlocked) {
+                enteredCode += num;
+                updateDots();
+                if (enteredCode.length === 6) checkCode();
+            }
+        }
+
+        function deleteDigit() {
+            if (enteredCode.length > 0 && !isGiftUnlocked) {
+                enteredCode = enteredCode.slice(0, -1);
+                updateDots();
+            }
+        }
+
+        function clearCode() {
+            if (!isGiftUnlocked) {
+                enteredCode = '';
+                updateDots();
+            }
+        }
+
+        function checkCode() {
+            if (enteredCode === TARGET_CODE) {
+                handleCorrectCode();
+            } else {
+                codeDotsContainer.classList.add('input-error');
+                showToast('Hmm... bukan itu kodenya, cayangkuuuu ♡');
+                setTimeout(() => {
+                    codeDotsContainer.classList.remove('input-error');
+                    clearCode();
+                }, 1000);
+            }
+        }
+
+        function handleCorrectCode() {
+            isGiftUnlocked = true;
+            codeDotsContainer.classList.add('input-success');
+            giftWrapper.classList.add('glow');
+
+            setTimeout(() => {
+                codeArea.style.opacity = '0';
+                codeArea.style.pointerEvents = 'none';
+
+                setTimeout(() => {
+                    giftInstructions.innerHTML = `
+                        <div class="text-center animate-pulse">
+                            <p class="text-purple-200 font-medium text-lg">Correct... ♡</p>
+                            <p class="text-sm font-light mt-1">Hadiah ini khusus untukmu, cayangkuuuu.</p>
+                            <p class="text-xs text-white/80 mt-2 bg-white/10 py-1 px-4 rounded-full inline-block backdrop-blur-sm border border-white/20">
+                                Ketuk kotaknya untuk membuka ♡
+                            </p>
+                        </div>`;
+                }, 500);
+            }, 1000);
+        }
+
+        function handleGiftClick() {
+            if (!isGiftUnlocked || isOpeningSequence) return;
+            isOpeningSequence = true;
+
+            giftInstructions.style.opacity = '0';
+            giftWrapper.classList.add('shake');
+
+            setTimeout(() => {
+                giftWrapper.classList.remove('shake');
+                giftWrapper.classList.add('opening');
+                magicLight.style.opacity = '0.5';
+                magicLight.style.transform = 'translate(-50%, -50%) scale(2)';
+            }, 800);
+
+            setTimeout(() => {
+                giftWrapper.classList.remove('opening');
+                giftWrapper.classList.add('opened');
+                magicLight.style.opacity = '1';
+                magicLight.classList.add('explode');
+                createAmbientStars(scene2, 15);
+                setTimeout(executeBigReveal, 1800);
+            }, 2000);
+        }
+
+        // ================= BIG REVEAL TIMELINE =================
+        function executeBigReveal() {
+            const ambientBg = document.getElementById('ambientBg');
+            const revealContainer = document.getElementById('reveal-container');
+            const revealAmbient = document.getElementById('reveal-ambient');
+            const heartWrapper = document.getElementById('reveal-heart-wrapper');
+            const text1 = document.getElementById('reveal-text-1');
+            const text2 = document.getElementById('reveal-text-2');
+            const flash = document.getElementById('reveal-flash');
+            const portal = document.getElementById('reveal-portal');
+            const mainWebsite = document.getElementById('main-website');
+            const mainStars = document.getElementById('main-stars');
+            const mainHeroContent = document.getElementById('main-hero-content');
+
+            // Silence
+            ambientBg.style.opacity = '0';
+            scene2.style.transition = 'opacity 1.2s ease';
+            scene2.style.opacity = '0';
+            revealContainer.classList.remove('opacity-0');
+            revealContainer.classList.add('opacity-100');
+            createAmbientStars(revealAmbient, 20);
+            setTimeout(() => { revealAmbient.style.opacity = '1'; }, 800);
+
+            // Heart appears
+            setTimeout(() => {
+                scene2.style.display = 'none';
+                heartWrapper.style.opacity = '1';
+                heartWrapper.style.transform = 'translate(-50%, -50%) scale(1)';
+                setTimeout(() => heartWrapper.classList.add('heart-pulse-anim'), 1000);
+            }, 1800);
+
+            // Message 1
+            setTimeout(() => { text1.style.opacity = '1'; text1.style.transform = 'translateY(0)'; }, 4000);
+            setTimeout(() => { text1.style.opacity = '0'; text1.style.transform = 'translateY(-10px)'; }, 6500);
+
+            // Message 2
+            setTimeout(() => { text2.style.opacity = '1'; text2.style.transform = 'translateY(0)'; }, 7200);
+            setTimeout(() => { text2.style.opacity = '0'; text2.style.transform = 'translateY(-10px)'; }, 9700);
+
+            // Heart centers
+            setTimeout(() => {
+                heartWrapper.classList.remove('heart-pulse-anim');
+                heartWrapper.classList.add('heart-center-anim');
+            }, 10500);
+
+            // Heart expands + particles
+            setTimeout(() => {
+                heartWrapper.classList.remove('heart-center-anim');
+                heartWrapper.classList.add('heart-expand-anim');
+                setTimeout(fireHeartExplosion, 300);
+            }, 12000);
+
+            // Light portal
+            setTimeout(() => {
+                flash.style.opacity = '1';
+                flash.style.transform = 'scale(3)';
+                setTimeout(() => {
+                    portal.style.opacity = '1';
+                    portal.style.transform = 'scale(12)';
+                }, 400);
+            }, 13000);
+
+            // Enter main website
+            setTimeout(() => {
+                mainWebsite.classList.remove('hidden');
+                void mainWebsite.offsetWidth;
+
+                setTimeout(() => {
+                    mainWebsite.classList.remove('opacity-0', 'scale-110', 'blur-xl', 'pointer-events-none');
+                    mainWebsite.classList.add('opacity-100', 'scale-100', 'blur-none', 'pointer-events-auto');
+                    document.body.style.overflow = 'auto';
+                    startMusic();
+
+                    setTimeout(() => {
+                        createAmbientStars(mainStars, 40);
+                        mainStars.style.opacity = '1';
+                        mainHeroContent.classList.remove('opacity-0', 'translate-y-8');
+                        mainHeroContent.classList.add('opacity-100', 'translate-y-0');
+                        setTimeout(() => revealContainer.remove(), 2000);
+                    }, 1000);
+                }, 500);
+            }, 14000);
+        }
+
+        function createAmbientStars(container, count) {
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.classList.add('reveal-ambient-star');
+                star.style.width = (Math.random() * 2 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = (Math.random() * 3) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        function fireHeartExplosion() {
+            const container = document.getElementById('reveal-container');
+            if (!container) return;
+            const particleCount = window.innerWidth < 600 ? 50 : 80;
+
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.classList.add('explosion-particle');
+
+                if (Math.random() > 0.6) {
+                    p.innerHTML = '<svg viewBox="0 0 32 29.6" class="w-2 h-2 md:w-3 md:h-3 fill-purple-200"><path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/></svg>';
+                } else {
+                    p.style.width = (Math.random() * 4 + 2) + 'px';
+                    p.style.height = p.style.width;
+                    p.style.background = Math.random() > 0.5 ? '#fff' : '#d88ebc';
+                    p.style.borderRadius = '50%';
+                }
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 250;
+                p.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                p.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+
+                container.appendChild(p);
+                requestAnimationFrame(() => setTimeout(() => p.classList.add('active'), 10));
+            }
+        }
+
+        // ================= MAKE A WISH =================
+        let candleLit = true;
+        const wishTitle = document.getElementById('wish-title');
+        const wishText = document.getElementById('wish-text');
+        const wishBtn = document.getElementById('wish-btn');
+        const flame = document.getElementById('flame');
+
+        function wishBurst() {
+            const card = document.getElementById('wish-card');
+            const symbols = ['♡', '✦', '✧', '♡', '·'];
+            const colors = ['#ffffff', '#f3d1ea', '#d88ebc', '#e9d5ff', '#ffd27a'];
+            for (let i = 0; i < 34; i++) {
+                const el = document.createElement('span');
+                el.className = 'wish-particle';
+                el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 70 + Math.random() * 190;
+                el.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                el.style.setProperty('--ty', Math.sin(angle) * dist - 40 + 'px');
+                el.style.setProperty('--rot', (Math.random() * 120 - 60) + 'deg');
+                el.style.setProperty('--size', (10 + Math.random() * 16) + 'px');
+                el.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
+                el.style.setProperty('--dur', (1.4 + Math.random() * 1.2) + 's');
+                el.addEventListener('animationend', () => el.remove());
+                card.appendChild(el);
+            }
+        }
+
+        function toggleCandle() {
+            candleLit = !candleLit;
+            flame.classList.toggle('out', !candleLit);
+            if (!candleLit) {
+                wishTitle.textContent = 'Semoga semuanya terkabul ♡';
+                wishText.textContent = 'Apa pun yang dede minta barusan, aku ikut aamiin-in. Selamat ulang tahun, Akila. ♡';
+                wishBtn.textContent = 'Nyalakan lagi ♡';
+                wishBurst();
+            } else {
+                wishTitle.textContent = 'Tiup lilinnya, Akila ♡';
+                wishText.textContent = 'Pejamkan mata, buat satu permintaan, lalu ketuk tombol di bawah.';
+                wishBtn.textContent = 'Tiup lilin ♡';
+            }
+        }
+
+        // ================= LETTER =================
+        function toggleBirthdayLetter() {
+            const letter = document.getElementById('birthday-letter');
+            const button = document.getElementById('letter-open-btn');
+            if (!letter || !button) return;
+            const isHidden = letter.classList.contains('hidden');
+            letter.classList.toggle('hidden', !isHidden);
+            button.textContent = isHidden ? 'Tutup surat ♡' : 'Buka surat kecil ini ♡';
+        }
+
+        window.addEventListener('load', () => setTimeout(startCountdown, 500));
+    </script>
+</body>
+</html>
